@@ -46,9 +46,8 @@ Run:
 ```
 
 This opens a Streamlit UI where you can:
-- paste a JD,
-- select experiences,
-- optionally provide suggestions JSON,
+- paste only a JD,
+- use stubbed experiences/suggestions,
 - generate tailored bullets with one click.
 
 ## Notes
