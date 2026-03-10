@@ -37,6 +37,20 @@ If you want a single command that does setup + run:
 
 The script creates/uses `.venv`, installs requirements, asks for JD/inputs, and runs generation.
 
+## Simple frontend (for testing)
+
+Run:
+
+```bash
+./run_frontend.sh
+```
+
+This opens a Streamlit UI where you can:
+- paste a JD,
+- select experiences,
+- optionally provide suggestions JSON,
+- generate tailored bullets with one click.
+
 ## Notes
 
 - This prototype uses local JSON persistence under `data/sessions`.

@@ -71,6 +71,7 @@ class CliOrchestrator:
         job_description: str,
         selected_ids: List[str],
         suggestions_by_id: Dict[str, SuggestionPayload] | None = None,
+        print_output: bool = True,
     ) -> Session:
         """Generate tailored bullets once and return session snapshot."""
         self._ensure_llm_ready()
@@ -87,7 +88,8 @@ class CliOrchestrator:
             suggestions_by_id=suggestions_by_id or {},
         )
         self.storage.save_session(session)
-        self._print_session(session)
+        if print_output:
+            self._print_session(session)
         return session
 
     @staticmethod
