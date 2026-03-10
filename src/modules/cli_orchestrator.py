@@ -11,23 +11,20 @@ from src.modules.storage import JsonStorage
 
 
 class CliOrchestrator:
-    def __init__(self, data_dir: Path) -> None:
+    def __init__(self, data_dir: Path, use_mock_llm: bool = False) -> None:
         self.storage = JsonStorage(data_dir=data_dir)
-        self.llm = self._build_llm()
+        self.llm = self._build_llm(use_mock_llm)
         self.session_manager = SessionManager(llm=self.llm)
         self.review_controller = ReviewController(self.session_manager)
 
     @staticmethod
-    def _build_llm():
+    def _build_llm(use_mock_llm: bool):
         from src.modules.llm_module import LlmModule
 
-        return LlmModule()
+        return LlmModule(use_mock=use_mock_llm)
 
     def run(self) -> Session:
-        healthy, message = self.llm.health_check()
-        if not healthy:
-            raise RuntimeError(f"LLM health check failed: {message}")
-        print(f"LLM ready: {message}")
+        self._ensure_llm_ready()
 
         experiences = self.storage.load_experiences()
         experiences_by_id: Dict[str, ExperienceCatalogItem] = {e.id: e for e in experiences}
@@ -66,6 +63,30 @@ class CliOrchestrator:
             self.storage.save_session(session)
 
         print("All experiences accepted. Session complete.")
+        self._print_session(session)
+        return session
+
+    def generate_once(
+        self,
+        job_description: str,
+        selected_ids: List[str],
+        suggestions_by_id: Dict[str, SuggestionPayload] | None = None,
+    ) -> Session:
+        """Generate tailored bullets once and return session snapshot."""
+        self._ensure_llm_ready()
+        experiences = self.storage.load_experiences()
+        experiences_by_id: Dict[str, ExperienceCatalogItem] = {e.id: e for e in experiences}
+        for exp_id in selected_ids:
+            if exp_id not in experiences_by_id:
+                raise ValueError(f"Unknown experience id: {exp_id}")
+
+        session = self.storage.create_session(job_description, selected_ids)
+        session = self.session_manager.initialize_generation(
+            session=session,
+            experiences_by_id=experiences_by_id,
+            suggestions_by_id=suggestions_by_id or {},
+        )
+        self.storage.save_session(session)
         self._print_session(session)
         return session
 
@@ -112,3 +133,9 @@ class CliOrchestrator:
             if draft.status != ExperienceStatus.accepted
         ]
         print(f"Remaining to accept: {remaining}\n")
+
+    def _ensure_llm_ready(self) -> None:
+        healthy, message = self.llm.health_check()
+        if not healthy:
+            raise RuntimeError(f"LLM health check failed: {message}")
+        print(f"LLM ready: {message}")

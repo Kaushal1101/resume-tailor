@@ -20,8 +20,14 @@ CLI-first resume tailoring prototype with per-experience review loops.
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python -m src.cli.main run
+python -m src.cli.main generate \
+  --jd "Backend engineer role focused on APIs and Python" \
+  --experience-ids "exp_backend_1,exp_data_1" \
+  --suggestions-json '{"exp_backend_1":{"keywords":["python","fastapi"],"bullet_count":3},"exp_data_1":{"keywords":["etl","analytics"],"bullet_count":2}}'
 ```
+
+This one-shot command prints tailored bullets immediately and exits.
+For offline demo without Ollama, add `--use-mock-llm`.
 
 ## Notes
 
