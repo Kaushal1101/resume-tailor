@@ -1,0 +1,28 @@
+[
+  {
+    "id": "exp_job_backend",
+    "type": "job",
+    "title": "Software Engineer",
+    "organization": "Acme Corp",
+    "date_range": "2022-2025",
+    "summary": "Built backend services for B2B SaaS products.",
+    "bullets": [
+      "Built and maintained REST APIs used by internal and external teams.",
+      "Collaborated with product and design to deliver roadmap features."
+    ],
+    "tags": ["python", "api", "backend"]
+  },
+  {
+    "id": "exp_project_analytics",
+    "type": "project",
+    "title": "Analytics Pipeline",
+    "organization": "Personal Project",
+    "date_range": "2024",
+    "summary": "Developed an ETL pipeline and dashboard workflow.",
+    "bullets": [
+      "Implemented scheduled data ingestion and transformation jobs.",
+      "Created dashboards to track key product and growth metrics."
+    ],
+    "tags": ["etl", "sql", "analytics"]
+  }
+]
