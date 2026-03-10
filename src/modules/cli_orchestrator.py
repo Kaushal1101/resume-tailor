@@ -13,7 +13,8 @@ from src.modules.storage import JsonStorage
 class CliOrchestrator:
     def __init__(self, data_dir: Path) -> None:
         self.storage = JsonStorage(data_dir=data_dir)
-        self.session_manager = SessionManager(llm=self._build_llm())
+        self.llm = self._build_llm()
+        self.session_manager = SessionManager(llm=self.llm)
         self.review_controller = ReviewController(self.session_manager)
 
     @staticmethod
@@ -23,6 +24,11 @@ class CliOrchestrator:
         return LlmModule()
 
     def run(self) -> Session:
+        healthy, message = self.llm.health_check()
+        if not healthy:
+            raise RuntimeError(f"LLM health check failed: {message}")
+        print(f"LLM ready: {message}")
+
         experiences = self.storage.load_experiences()
         experiences_by_id: Dict[str, ExperienceCatalogItem] = {e.id: e for e in experiences}
 

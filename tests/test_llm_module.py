@@ -16,3 +16,10 @@ def test_generate_retries_and_returns_structured_bullets() -> None:
 def test_parse_bullets_rejects_non_json_output() -> None:
     parsed = LlmModule._parse_bullets("not-json")
     assert parsed == []
+
+
+def test_health_check_passes_in_mock_mode() -> None:
+    llm = LlmModule(use_mock=True)
+    healthy, message = llm.health_check()
+    assert healthy is True
+    assert "Mock" in message

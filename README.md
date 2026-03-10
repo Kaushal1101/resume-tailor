@@ -43,6 +43,8 @@ ollama pull qwen3:4b
 ollama serve
 ```
 
+The CLI now runs a startup health check and will stop early with guidance if the model server is unreachable or the model is missing.
+
 Optional environment variables:
 
 - `RESUME_TAILOR_LLM_MODEL` (default: `qwen3:4b`)

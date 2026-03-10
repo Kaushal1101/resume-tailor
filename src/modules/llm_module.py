@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 from urllib import error, request
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from src.domain.entities import ExperienceCatalogItem, SuggestionPayload
 
@@ -68,6 +69,32 @@ class LlmModule:
         tool_hint = suggestions.tools[0] if suggestions.tools else "relevant tooling"
         return [f"{bullet} Emphasized {tool_hint} and measurable execution." for bullet in current_bullets]
 
+    def health_check(self) -> Tuple[bool, str]:
+        """Validate local model endpoint availability before generation starts."""
+        if self.use_mock:
+            return True, "Mock LLM mode enabled."
+
+        tags_url = self._tags_url()
+        req = request.Request(tags_url, method="GET")
+        try:
+            with request.urlopen(req, timeout=self.timeout_seconds) as response:
+                decoded = json.loads(response.read().decode("utf-8"))
+                models = decoded.get("models", [])
+                names = [str(item.get("name", "")) for item in models if isinstance(item, dict)]
+                if any(name == self.model_name or name.startswith(f"{self.model_name}:") for name in names):
+                    return True, f"Connected to Ollama and found model '{self.model_name}'."
+                return (
+                    False,
+                    f"Connected to Ollama but model '{self.model_name}' is missing. "
+                    f"Run: ollama pull {self.model_name}",
+                )
+        except (error.URLError, TimeoutError, json.JSONDecodeError):
+            return (
+                False,
+                "Cannot reach Ollama server. Ensure it is running with `ollama serve` "
+                f"and endpoint is set via RESUME_TAILOR_OLLAMA_URL (current: {self.base_url}).",
+            )
+
     @staticmethod
     def _parse_bullets(raw_output: str) -> List[str]:
         try:
@@ -122,3 +149,8 @@ class LlmModule:
             f"Led {experience.title} initiatives at {experience.company}, aligned with {keyphrase}."
             for _ in range(count)
         ]
+
+    def _tags_url(self) -> str:
+        parsed = urlparse(self.base_url)
+        path_prefix = parsed.path.split("/api/")[0]
+        return f"{parsed.scheme}://{parsed.netloc}{path_prefix}/api/tags"
