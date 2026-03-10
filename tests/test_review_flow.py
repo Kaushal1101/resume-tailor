@@ -30,7 +30,7 @@ def build_experiences():
 
 
 def test_iterate_is_isolated_to_single_experience() -> None:
-    manager = SessionManager(LlmModule())
+    manager = SessionManager(LlmModule(use_mock=True))
     session = build_session()
     experiences = build_experiences()
     manager.initialize_generation(session, experiences, {})
@@ -47,7 +47,7 @@ def test_iterate_is_isolated_to_single_experience() -> None:
 
 
 def test_session_completes_only_when_all_experiences_accepted() -> None:
-    manager = SessionManager(LlmModule())
+    manager = SessionManager(LlmModule(use_mock=True))
     session = build_session()
     experiences = build_experiences()
     manager.initialize_generation(session, experiences, {})
@@ -60,7 +60,7 @@ def test_session_completes_only_when_all_experiences_accepted() -> None:
 
 
 def test_review_controller_rejects_unknown_action() -> None:
-    manager = SessionManager(LlmModule())
+    manager = SessionManager(LlmModule(use_mock=True))
     controller = ReviewController(manager)
     session = build_session()
     experiences = build_experiences()
@@ -77,7 +77,7 @@ def test_review_controller_rejects_unknown_action() -> None:
 
 
 def test_accept_locks_specific_experience_only() -> None:
-    manager = SessionManager(LlmModule())
+    manager = SessionManager(LlmModule(use_mock=True))
     session = build_session()
     experiences = build_experiences()
     manager.initialize_generation(session, experiences, {})

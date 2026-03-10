@@ -20,7 +20,7 @@ def build_session() -> Session:
 
 
 def test_reject_is_isolated_to_target_experience() -> None:
-    manager = SessionManager(LlmModule())
+    manager = SessionManager(LlmModule(use_mock=True))
     session = build_session()
     experiences = {
         "exp1": ExperienceCatalogItem(id="exp1", title="SE", company="A"),
@@ -40,7 +40,7 @@ def test_reject_is_isolated_to_target_experience() -> None:
 
 
 def test_accepted_experience_is_locked() -> None:
-    manager = SessionManager(LlmModule())
+    manager = SessionManager(LlmModule(use_mock=True))
     session = build_session()
     experiences = {
         "exp1": ExperienceCatalogItem(id="exp1", title="SE", company="A"),

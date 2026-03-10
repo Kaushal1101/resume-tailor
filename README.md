@@ -26,4 +26,25 @@ python -m src.cli.main run
 ## Notes
 
 - This prototype uses local JSON persistence under `data/sessions`.
-- LLM generation is stubbed in `src/modules/llm_module.py` and can be replaced with a real provider.
+- LLM generation uses a local Ollama endpoint by default with model `qwen3:4b`.
+
+## Local model setup (Ollama)
+
+1. Install and run Ollama locally.
+2. Pull the model:
+
+```bash
+ollama pull qwen3:4b
+```
+
+3. Start Ollama server (if not already running):
+
+```bash
+ollama serve
+```
+
+Optional environment variables:
+
+- `RESUME_TAILOR_LLM_MODEL` (default: `qwen3:4b`)
+- `RESUME_TAILOR_OLLAMA_URL` (default: `http://localhost:11434/api/generate`)
+- `RESUME_TAILOR_OLLAMA_TIMEOUT_SECONDS` (default: `60`)

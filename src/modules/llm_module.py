@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+from urllib import error, request
 from typing import Any, Dict, List
 
 from src.domain.entities import ExperienceCatalogItem, SuggestionPayload
@@ -10,10 +12,14 @@ from src.domain.entities import ExperienceCatalogItem, SuggestionPayload
 class LlmModule:
     """LLM adapter with strict JSON output parsing and retry fallback."""
 
-    def __init__(self) -> None:
+    def __init__(self, use_mock: bool = False) -> None:
         base_dir = Path(__file__).resolve().parent.parent
         self._generate_template = (base_dir / "templates" / "prompt_generate.txt").read_text()
         self._refine_template = (base_dir / "templates" / "prompt_refine.txt").read_text()
+        self.model_name = os.getenv("RESUME_TAILOR_LLM_MODEL", "qwen3:4b")
+        self.base_url = os.getenv("RESUME_TAILOR_OLLAMA_URL", "http://localhost:11434/api/generate")
+        self.timeout_seconds = float(os.getenv("RESUME_TAILOR_OLLAMA_TIMEOUT_SECONDS", "60"))
+        self.use_mock = use_mock
 
     def generate_from_scratch(
         self,
@@ -75,14 +81,35 @@ class LlmModule:
             return []
 
     def _call_model(self, prompt: str, mode: str) -> str:
-        """Mock model call for prototype; swap with provider SDK later."""
-        if "STRICT_JSON" in prompt:
-            bullets = [
-                f"{mode.title()} bullet aligned to JD and targeted experience.",
-                f"{mode.title()} bullet emphasizing measurable impact and role fit.",
-            ]
-            return json.dumps({"bullets": bullets})
-        return "- malformed bullet line one\n- malformed bullet line two"
+        """Call local Ollama model and return raw text content."""
+        if self.use_mock:
+            if "STRICT_JSON" in prompt:
+                bullets = [
+                    f"{mode.title()} bullet aligned to JD and targeted experience.",
+                    f"{mode.title()} bullet emphasizing measurable impact and role fit.",
+                ]
+                return json.dumps({"bullets": bullets})
+            return "- malformed bullet line one\n- malformed bullet line two"
+
+        payload = {
+            "model": self.model_name,
+            "prompt": prompt,
+            "stream": False,
+            "format": "json",
+        }
+        req = request.Request(
+            self.base_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with request.urlopen(req, timeout=self.timeout_seconds) as response:
+                decoded = json.loads(response.read().decode("utf-8"))
+                # Ollama response format includes a plain text field named "response".
+                return str(decoded.get("response", ""))
+        except (error.URLError, TimeoutError, json.JSONDecodeError):
+            return ""
 
     @staticmethod
     def _fallback_bullets(

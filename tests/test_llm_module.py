@@ -3,7 +3,7 @@ from src.modules.llm_module import LlmModule
 
 
 def test_generate_retries_and_returns_structured_bullets() -> None:
-    llm = LlmModule()
+    llm = LlmModule(use_mock=True)
     bullets = llm.generate_from_scratch(
         job_description="Build backend APIs",
         experience=ExperienceCatalogItem(id="exp1", title="Software Engineer", company="Acme"),
