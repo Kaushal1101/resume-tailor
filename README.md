@@ -29,6 +29,14 @@ python -m src.cli.main generate \
 This one-shot command prints tailored bullets immediately and exits.
 For offline demo without Ollama, add `--use-mock-llm`.
 
+If you want a single command that does setup + run:
+
+```bash
+./run_prototype.sh
+```
+
+The script creates/uses `.venv`, installs requirements, asks for JD/inputs, and runs generation.
+
 ## Notes
 
 - This prototype uses local JSON persistence under `data/sessions`.
